@@ -17,14 +17,19 @@ The important things to remember are:
 Alternative options (more precise comments for these should be added)
 
 
-* `in_bulk`
+.. _in_bulk: http://https://docs.djangoproject.com/en/1.6/ref/models/querysets/#in-bulk
+.. _django_serializers: https://docs.djangoproject.com/en/1.6/topics/serialization/
+
+* `in_bulk`_
 * `model_to_dict` (django.forms.models.model_to_dict)
- - editable=False fields are automatically ignored in model_to_dict
-* django serializers
-```
-from django.core import serializers
-data = serializers.serialize('python', DictModel.objects.all())
-```
+
+    - editable=False fields are automatically ignored in model_to_dict
+* django_serializers_
+
+.. code-block:: python
+
+    from django.core import serializers
+    data = serializers.serialize('python', DictModel.objects.all())
 
 Django Queryset Query obj (<django.db.models.sql.query.Query>)
 ==============================================================
@@ -37,7 +42,10 @@ In the following, we will use the test_app models to make concrete examples
 It holds three important properties for us - ONCE IT HAS BEEN COMPILED -:
 
 related_fields
-    a dictionary-tree, eg:
+    a dictionary-tree of the related fields,
+    eg.:
+
+.. code-block:: python
 
     {
         'a': {},
@@ -48,11 +56,14 @@ related_fields
             }
     }
 
+
 alias_map
     a dictionary of table-aliases -> JoinInfo details
+
     if a table is aliased, the key will be its aliased name. The value is a named tuple, `JoinInfo`, that contains:
 
-::
+.. code-block:: python
+
     test_app_modeld:
         JoinInfo(table_name=u'test_app_modeld', rhs_alias=u'test_app_modeld', join_type=None, lhs_alias=None, join_cols=((None, None),), nullable=False, join_field=None)
     T5 :
@@ -64,32 +75,31 @@ alias_map
     test_app_modelb :
         JoinInfo(table_name=u'test_app_modelb', rhs_alias=u'test_app_modelb', join_type='INNER JOIN', lhs_alias=u'test_app_modelc', join_cols=(('b_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: b>)
 
+
 join_map
     a dictionary mapping
+    (I do not know why the values of the dict are also a tuple - in which case there's more than one table?)
 
-    (i do not know what the value is a tuple - in which case there's more than one table?)
+ .. code-block:: python
 
-::
-    (from_model_table, to_model_table, (join_field_from, join_field_to)):
-        (to_model_table,)
+    # tuples structure
 
-and a full example:
+    (from_model_table, to_model_table, (join_field_from, join_field_to)): (to_model_table,)
 
-::
+ .. code-block:: python
+
+    # full-example
+
+    (None, u'test_app_modeld', None) :
+      (u'test_app_modeld',)
     (u'test_app_modeld', u'test_app_modela', (('a_id', u'id'),)) :
       (u'test_app_modela',)
     (u'test_app_modeld', u'test_app_modelc', (('c_id', u'id'),)) :
       (u'test_app_modelc',)
-    (None, u'test_app_modeld', None) :
-      (u'test_app_modeld',)
-    (u'test_app_modelb', u'test_app_modela', (('a_id', u'id'),)) :
-      ('T5',)
     (u'test_app_modelc', u'test_app_modelb', (('b_id', u'id'),)) :
       (u'test_app_modelb',)
-
-
-
-
+    (u'test_app_modelb', u'test_app_modela', (('a_id', u'id'),)) :
+      ('T5',)
 
 
 Testing django-queryset-plus
