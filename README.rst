@@ -52,36 +52,40 @@ alias_map
     a dictionary of table-aliases -> JoinInfo details
     if a table is aliased, the key will be its aliased name. The value is a named tuple, `JoinInfo`, that contains:
 
-    ::
-        test_app_modeld:
-            JoinInfo(table_name=u'test_app_modeld', rhs_alias=u'test_app_modeld', join_type=None, lhs_alias=None, join_cols=((None, None),), nullable=False, join_field=None)
-        T5 :
-            JoinInfo(table_name=u'test_app_modela', rhs_alias='T5', join_type='INNER JOIN', lhs_alias=u'test_app_modelb', join_cols=(('a_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: a>)
-        test_app_modela :
-            JoinInfo(table_name=u'test_app_modela', rhs_alias=u'test_app_modela', join_type='INNER JOIN', lhs_alias=u'test_app_modeld', join_cols=(('a_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: a>)
-        test_app_modelc :
-            JoinInfo(table_name=u'test_app_modelc', rhs_alias=u'test_app_modelc', join_type='INNER JOIN', lhs_alias=u'test_app_modeld', join_cols=(('c_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: c>)
-        test_app_modelb :
-            JoinInfo(table_name=u'test_app_modelb', rhs_alias=u'test_app_modelb', join_type='INNER JOIN', lhs_alias=u'test_app_modelc', join_cols=(('b_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: b>)
+::
+    test_app_modeld:
+        JoinInfo(table_name=u'test_app_modeld', rhs_alias=u'test_app_modeld', join_type=None, lhs_alias=None, join_cols=((None, None),), nullable=False, join_field=None)
+    T5 :
+        JoinInfo(table_name=u'test_app_modela', rhs_alias='T5', join_type='INNER JOIN', lhs_alias=u'test_app_modelb', join_cols=(('a_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: a>)
+    test_app_modela :
+        JoinInfo(table_name=u'test_app_modela', rhs_alias=u'test_app_modela', join_type='INNER JOIN', lhs_alias=u'test_app_modeld', join_cols=(('a_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: a>)
+    test_app_modelc :
+        JoinInfo(table_name=u'test_app_modelc', rhs_alias=u'test_app_modelc', join_type='INNER JOIN', lhs_alias=u'test_app_modeld', join_cols=(('c_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: c>)
+    test_app_modelb :
+        JoinInfo(table_name=u'test_app_modelb', rhs_alias=u'test_app_modelb', join_type='INNER JOIN', lhs_alias=u'test_app_modelc', join_cols=(('b_id', u'id'),), nullable=False, join_field=<django.db.models.fields.related.ForeignKey: b>)
 
 join_map
     a dictionary mapping
 
     (i do not know what the value is a tuple - in which case there's more than one table?)
 
-    >   (from_model_table, to_model_table, (join_field_from, join_field_to)):
-            (to_model_table,)
+::
+    (from_model_table, to_model_table, (join_field_from, join_field_to)):
+        (to_model_table,)
 
-    >   (u'test_app_modeld', u'test_app_modela', (('a_id', u'id'),)) :
-    >     (u'test_app_modela',)
-    >   (u'test_app_modeld', u'test_app_modelc', (('c_id', u'id'),)) :
-    >     (u'test_app_modelc',)
-    >   (None, u'test_app_modeld', None) :
-    >     (u'test_app_modeld',)
-    >   (u'test_app_modelb', u'test_app_modela', (('a_id', u'id'),)) :
-    >     ('T5',)
-    >   (u'test_app_modelc', u'test_app_modelb', (('b_id', u'id'),)) :
-    >     (u'test_app_modelb',)
+and a full example:
+
+::
+    (u'test_app_modeld', u'test_app_modela', (('a_id', u'id'),)) :
+      (u'test_app_modela',)
+    (u'test_app_modeld', u'test_app_modelc', (('c_id', u'id'),)) :
+      (u'test_app_modelc',)
+    (None, u'test_app_modeld', None) :
+      (u'test_app_modeld',)
+    (u'test_app_modelb', u'test_app_modela', (('a_id', u'id'),)) :
+      ('T5',)
+    (u'test_app_modelc', u'test_app_modelb', (('b_id', u'id'),)) :
+      (u'test_app_modelb',)
 
 
 
