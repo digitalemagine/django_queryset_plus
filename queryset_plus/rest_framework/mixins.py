@@ -12,38 +12,71 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.request import clone_request
 from rest_framework.settings import api_settings
+
+# this is currently unmodified
+from rest_framework.mixins import CreateModelMixin, UpdateModelMixin, DestroyModelMixin
+
 import warnings
 
+from queryset_plus.db import queryset_as_dict
 
 
+class BaseModelMixin(object):
 
-def _get_validation_exclusions(obj, pk=None, slug_field=None, lookup_field=None):
-    """
-    Given a model instance, and an optional pk and slug field,
-    return the full list of all other field names on that model.
+    def get_serialized_object(self, queryset=None):
+        """
+        Returns the object the view is displaying, already serialized
+        through queryset_plus.queryset_as_dict        
+        """
+        # Determine the base queryset to use.
+        if queryset is None:
+            queryset = self.filter_queryset(self.get_queryset())
+        else:
+            pass  # Deprecation warning
 
-    For use when performing full_clean on a model instance,
-    so we only clean the required fields.
-    """
-    include = []
+        # Perform the lookup filtering.
+        # Note that `pk` and `slug` are deprecated styles of lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup = self.kwargs.get(lookup_url_kwarg, None)
+        pk = self.kwargs.get(self.pk_url_kwarg, None)
+        slug = self.kwargs.get(self.slug_url_kwarg, None)
 
-    if pk:
-        # Pending deprecation
-        pk_field = obj._meta.pk
-        while pk_field.rel:
-            pk_field = pk_field.rel.to._meta.pk
-        include.append(pk_field.name)
+        if lookup is not None:
+            filter_kwargs = {self.lookup_field: lookup}
+        elif pk is not None and self.lookup_field == 'pk':
+            warnings.warn(
+                'The `pk_url_kwarg` attribute is due to be deprecated. '
+                'Use the `lookup_field` attribute instead',
+                PendingDeprecationWarning
+            )
+            filter_kwargs = {'pk': pk}
+        elif slug is not None and self.lookup_field == 'pk':
+            warnings.warn(
+                'The `slug_url_kwarg` attribute is due to be deprecated. '
+                'Use the `lookup_field` attribute instead',
+                PendingDeprecationWarning
+            )
+            filter_kwargs = {self.slug_field: slug}
+        else:
+            raise ImproperlyConfigured(
+                'Expected view %s to be called with a URL keyword argument '
+                'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                'attribute on the view correctly.' %
+                (self.__class__.__name__, self.lookup_field)
+            )
 
-    if slug_field:
-        # Pending deprecation
-        include.append(slug_field)
+        ### IF permission check is required:
+        # May raise a permission denied
+        obj = get_object_or_404(queryset, **filter_kwargs)
+        self.check_object_permissions(self.request, obj)
 
-    if lookup_field and lookup_field != 'pk':
-        include.append(lookup_field)
+        # I must always work with querysets, or I can't run my code.
+        try:
+            return queryset_as_dict(queryset.filter(**filter_kwargs))[0]
+        except:
+            raise Http404
 
-    return [field.name for field in obj._meta.fields if field.name not in include]
-
-
+'''
 class CreateModelMixin(object):
     """
     Create a model instance.
@@ -66,7 +99,7 @@ class CreateModelMixin(object):
             return {'Location': data[api_settings.URL_FIELD_NAME]}
         except (TypeError, KeyError):
             return {}
-
+'''
 
 class ListModelMixin(object):
     """
@@ -75,7 +108,7 @@ class ListModelMixin(object):
     empty_error = "Empty list and '%(class_name)s.allow_empty' is False."
 
     def list(self, request, *args, **kwargs):
-        self.object_list = self.filter_queryset(self.get_queryset())
+        self.object_list = queryset_as_dict(self.filter_queryset(self.get_queryset()))
 
         # Default is to allow empty querysets.  This can be altered by setting
         # `.allow_empty = False`, to raise 404 errors on empty querysets.
@@ -105,11 +138,11 @@ class RetrieveModelMixin(object):
     Retrieve a model instance.
     """
     def retrieve(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        serializer = self.get_serializer(self.object)
-        return Response(serializer.data)
+        self.object = self.get_serialized_object()
+        return self.object
 
 
+'''
 class UpdateModelMixin(object):
     """
     Update a model instance.
@@ -196,3 +229,4 @@ class DestroyModelMixin(object):
         obj.delete()
         self.post_delete(obj)
         return Response(status=status.HTTP_204_NO_CONTENT)
+'''
