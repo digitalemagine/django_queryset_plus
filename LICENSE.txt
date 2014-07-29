@@ -1,4 +1,4 @@
-Copyright (c) Stefano Crosta / digitalemagine, and individual contributors.
+Copyright (c) Stefano Crosta / digitalemagine for "Slice Factory".
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
